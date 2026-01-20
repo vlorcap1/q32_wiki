@@ -15,10 +15,6 @@
 - ✅ Visualización de estados Quantum32
 - ✅ Sin instalación - funciona desde GitHub Pages
 
-## 🌐 Demo en Vivo
-
-**URL:** `https://TU-USUARIO.github.io/quantum32-analyzer/`
-
 ## 🔌 Conexión con Arduino
 
 ### Requisitos
