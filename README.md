@@ -6,7 +6,6 @@ Sistema de análisis semántico holográfico con diseño Wikipedia y simulación
 
 ## 🚀 Características v2.0
 
-✅ **Diseño estilo Wikipedia** - Interfaz limpia y profesional  
 ✅ **Bit inestable cuántico** - Simula superposición (parpadea)  
 ✅ **Sistema de debate** - 4 esclavos discuten y votan  
 ✅ **150+ stop words** - Sin "que", "la", "los", "para", "por"  
