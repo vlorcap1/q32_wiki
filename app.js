@@ -1035,14 +1035,50 @@ async function handleAnalyze() {
 // ===============================================
 
 // ===============================================
-// SISTEMA DE DEBATE ENTRE ESCLAVOS
+// SISTEMA DE DEBATE CON POSICIONES IDEOLÓGICAS
 // ===============================================
 
 class SistemaDebate {
     constructor() {
         this.argumentos = [];
         this.esclavos = [];
-        this.categorias = ['👥 Entidades', '⚡ Acciones', '💡 Conceptos', '🔧 Propiedades'];
+        
+        // NUEVO: Posiciones ideológicas/filosóficas de cada esclavo
+        this.posiciones = [
+            {
+                id: 0,
+                nombre: 'Empirista',
+                emoji: '🔬',
+                ideologia: 'Basado en datos y evidencia observable',
+                bias: 'Prioriza hechos concretos, estadísticas y verificabilidad',
+                argumentStyle: 'lógico-científico'
+            },
+            {
+                id: 1,
+                nombre: 'Pragmático',
+                emoji: '⚙️',
+                ideologia: 'Enfocado en utilidad práctica y resultados',
+                bias: 'Prioriza aplicabilidad, eficiencia y valor práctico',
+                argumentStyle: 'utilitarista'
+            },
+            {
+                id: 2,
+                nombre: 'Teórico',
+                emoji: '💭',
+                ideologia: 'Valora ideas abstractas y modelos conceptuales',
+                bias: 'Prioriza coherencia teórica, elegancia y profundidad',
+                argumentStyle: 'filosófico-abstracto'
+            },
+            {
+                id: 3,
+                nombre: 'Crítico',
+                emoji: '⚖️',
+                ideologia: 'Cuestiona supuestos y busca contradicciones',
+                bias: 'Prioriza análisis crítico, escepticismo y debate',
+                argumentStyle: 'dialéctico'
+            }
+        ];
+        
         this.historialDebates = [];
     }
 
@@ -1052,19 +1088,387 @@ class SistemaDebate {
         
         const q32 = analysis.quantum32_data;
         const semantic = analysis.semantic_analysis;
-        const categoryKeys = Object.keys(semantic.categories);
         
-        // Crear perfiles de esclavos
+        // Crear perfiles de esclavos con sus posiciones
         for (let i = 0; i < 4; i++) {
+            const posicion = this.posiciones[i];
             this.esclavos.push({
                 id: i,
-                nombre: this.categorias[i],
+                nombre: posicion.nombre,
+                emoji: posicion.emoji,
+                ideologia: posicion.ideologia,
+                bias: posicion.bias,
+                argumentStyle: posicion.argumentStyle,
                 estado: q32.boundary_states[i],
-                peso_semantico: semantic.categories[categoryKeys[i]] || 0,
                 victorias: 0,
                 derrotas: 0
             });
         }
+    }
+
+    async ejecutarDebate(analysis) {
+        this.inicializar(analysis);
+        
+        addToConsole('\n╔════════════════════════════════════════════╗', 'success');
+        addToConsole('║    🎭 DEBATE: POSICIONES ENFRENTADAS     ║', 'success');
+        addToConsole('╚════════════════════════════════════════════╝\n', 'success');
+        
+        this.imprimirFraseInicial(analysis);
+        await this.sleep(1000);
+        
+        // FASE 1: Presentación de posiciones
+        addToConsole('\n┌────────────────────────────────────────────┐');
+        addToConsole('│  🎭 FASE 1: PRESENTACIÓN DE POSICIONES    │');
+        addToConsole('└────────────────────────────────────────────┘\n');
+        await this.presentarPosiciones(analysis);
+        await this.sleep(1500);
+        
+        // FASE 2: Confrontación dialéctica
+        addToConsole('\n┌────────────────────────────────────────────┐');
+        addToConsole('│  ⚔️  FASE 2: CONFRONTACIÓN DIALÉCTICA     │');
+        addToConsole('└────────────────────────────────────────────┘\n');
+        await this.confrontacionDialectica(analysis);
+        await this.sleep(1500);
+        
+        // FASE 3: Votación ideológica
+        addToConsole('\n┌────────────────────────────────────────────┐');
+        addToConsole('│  🗳️  FASE 3: VOTACIÓN IDEOLÓGICA          │');
+        addToConsole('└────────────────────────────────────────────┘\n');
+        const ganador = await this.votacionIdeologica();
+        await this.sleep(1000);
+        
+        // FASE 4: Síntesis final
+        await this.imprimirSintesisFinal(ganador, analysis);
+        
+        // Actualizar estadísticas
+        this.esclavos[ganador].victorias++;
+        this.esclavos.forEach((e, i) => {
+            if (i !== ganador) e.derrotas++;
+        });
+        
+        // Guardar en historial
+        this.historialDebates.push({
+            documento: analysis.title,
+            ganador: ganador,
+            posicionGanadora: this.posiciones[ganador].nombre,
+            timestamp: new Date().toISOString(),
+            argumentos: [...this.argumentos]
+        });
+        
+        // Visualizar resultado
+        this.mostrarResultadoDebate(ganador, analysis);
+        
+        return ganador;
+    }
+
+    imprimirFraseInicial(analysis) {
+        addToConsole(`📄 Tema de debate: "${analysis.title}"`);
+        addToConsole('');
+        addToConsole('Se convoca un debate filosófico entre 4 posiciones distintas');
+        addToConsole('para interpretar y analizar este documento.');
+        addToConsole('');
+        addToConsole('Cada esclavo defenderá su perspectiva ideológica:');
+        addToConsole('');
+        this.posiciones.forEach(p => {
+            addToConsole(`  ${p.emoji} ${p.nombre}: ${p.ideologia}`);
+        });
+        addToConsole('');
+        addToConsole('El debate determinará qué posición ofrece la mejor');
+        addToConsole('interpretación del contenido.');
+        addToConsole('');
+    }
+
+    async presentarPosiciones(analysis) {
+        addToConsole('Cada posición presenta su interpretación del documento...\n');
+        
+        const q32 = analysis.quantum32_data;
+        const semantic = analysis.semantic_analysis;
+        
+        for (let i = 0; i < 4; i++) {
+            const esclavo = this.esclavos[i];
+            
+            // Construir argumento según la posición ideológica
+            const argumento = this.construirArgumentoIdeologico(i, analysis);
+            
+            this.argumentos.push({
+                esclavo: i,
+                posicion: esclavo.nombre,
+                argumento: argumento,
+                fuerza: argumento.fuerza,
+                coherencia: argumento.coherencia,
+                originalidad: argumento.originalidad,
+                votos: []
+            });
+            
+            this.imprimirArgumentoPosicion(i, argumento, analysis);
+            await this.sleep(800);
+        }
+    }
+
+    construirArgumentoIdeologico(idx, analysis) {
+        const esclavo = this.esclavos[idx];
+        const estado = esclavo.estado;
+        const q32 = analysis.quantum32_data;
+        const semantic = analysis.semantic_analysis;
+        
+        // Construir argumento según posición ideológica
+        let interpretacion = '';
+        let evidencia = '';
+        let conclusion = '';
+        
+        switch(idx) {
+            case 0: // Empirista
+                interpretacion = `Analizando los datos objetivos, este documento contiene ${analysis.text_length} caracteres con una densidad léxica de ${semantic.density.lexical_density.toFixed(2)}.`;
+                evidencia = `Mi estado cuantificable es ${estado}/255 (${(estado/255*100).toFixed(1)}%), lo cual indica presencia medible en el texto.`;
+                conclusion = `Basándome en evidencia verificable, este documento tiene características observables y cuantificables.`;
+                break;
+                
+            case 1: // Pragmático
+                interpretacion = `Lo importante es la utilidad práctica. Este documento tiene ${semantic.density.unique_words} palabras únicas, lo cual impacta su aplicabilidad.`;
+                evidencia = `Mi estado de ${estado}/255 representa valor funcional. Los bits activos (${q32.bits_active}/32) indican eficiencia informacional.`;
+                conclusion = `En términos prácticos, este documento ${estado > 150 ? 'ofrece alto valor utilitario' : 'tiene aplicación limitada'}.`;
+                break;
+                
+            case 2: // Teórico
+                interpretacion = `Desde una perspectiva conceptual, el peso semántico de ${q32.semantic_weight.toFixed(3)} revela la estructura profunda del significado.`;
+                evidencia = `Mi estado de ${estado}/255 mapea a un espacio conceptual abstracto. La coherencia holográfica de ${q32.holographic_coherence.toFixed(3)} indica elegancia teórica.`;
+                conclusion = `Teóricamente, este documento exhibe ${q32.holographic_coherence > 0.7 ? 'alta coherencia conceptual' : 'estructura fragmentada'}.`;
+                break;
+                
+            case 3: // Crítico
+                interpretacion = `Debemos cuestionar los supuestos. ¿Qué nos oculta la superficie del texto? Hay ${q32.quantum_metadata.num_uncertain} bits inestables.`;
+                evidencia = `Mi estado de ${estado}/255 representa tensión dialéctica. Los ${q32.quantum_metadata.num_uncertain} bits cuánticos revelan contradicciones latentes.`;
+                conclusion = `Críticamente, este documento ${q32.quantum_metadata.num_uncertain > 8 ? 'está lleno de ambigüedades irresueltas' : 'presenta una posición relativamente definida'}.`;
+                break;
+        }
+        
+        return {
+            interpretacion: interpretacion,
+            evidencia: evidencia,
+            conclusion: conclusion,
+            fuerza: estado,
+            coherencia: Math.round(q32.holographic_coherence * 255),
+            originalidad: Math.round((Math.random() * 50 + 150))
+        };
+    }
+
+    imprimirArgumentoPosicion(idx, arg, analysis) {
+        const esclavo = this.esclavos[idx];
+        
+        addToConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        addToConsole(`${esclavo.emoji} ${esclavo.nombre} (Posición ${idx}) toma la palabra:\n`);
+        
+        addToConsole(`  "${arg.interpretacion}\n`);
+        addToConsole(`   ${arg.evidencia}\n`);
+        addToConsole(`   ${arg.conclusion}"\n`);
+        
+        addToConsole(`  Métricas del argumento:`);
+        addToConsole(`   ├─ Fuerza:        ${arg.fuerza}/255 [${this.getBarra(arg.fuerza)}]`);
+        addToConsole(`   ├─ Coherencia:    ${arg.coherencia}/255 [${this.getBarra(arg.coherencia)}]`);
+        addToConsole(`   └─ Originalidad:  ${arg.originalidad}/255 [${this.getBarra(arg.originalidad)}]`);
+        addToConsole('');
+        
+        // Evaluación cualitativa
+        const score = arg.fuerza + arg.coherencia + arg.originalidad;
+        
+        if (score > 650) {
+            addToConsole(`   ✨ "Argumento CONVINCENTE y bien fundamentado"`);
+        } else if (score > 500) {
+            addToConsole(`   💪 "Argumento SÓLIDO desde esta perspectiva"`);
+        } else if (score > 350) {
+            addToConsole(`   👍 "Argumento ACEPTABLE pero debatible"`);
+        } else {
+            addToConsole(`   🤔 "Argumento DÉBIL, falta sustento"`);
+        }
+        
+        addToConsole('');
+    }
+
+    async confrontacionDialectica(analysis) {
+        addToConsole('Las posiciones se confrontan directamente...\n');
+        
+        // Confrontaciones específicas (posiciones opuestas)
+        const confrontaciones = [
+            [0, 2], // Empirista vs Teórico
+            [1, 3]  // Pragmático vs Crítico
+        ];
+        
+        for (const [idx1, idx2] of confrontaciones) {
+            const e1 = this.esclavos[idx1];
+            const e2 = this.esclavos[idx2];
+            const a1 = this.argumentos[idx1];
+            const a2 = this.argumentos[idx2];
+            
+            addToConsole(`⚔️  ${e1.emoji} ${e1.nombre} vs ${e2.emoji} ${e2.nombre}:`);
+            addToConsole('');
+            
+            // Crítica mutua
+            const critica1a2 = this.generarCritica(idx1, idx2, analysis);
+            const critica2a1 = this.generarCritica(idx2, idx1, analysis);
+            
+            addToConsole(`   ${e1.emoji} ${e1.nombre} critica:`);
+            addToConsole(`   "${critica1a2}"`);
+            addToConsole('');
+            
+            addToConsole(`   ${e2.emoji} ${e2.nombre} responde:`);
+            addToConsole(`   "${critica2a1}"`);
+            addToConsole('');
+            
+            await this.sleep(500);
+        }
+    }
+
+    generarCritica(criticaIdx, objetivoIdx, analysis) {
+        const criticas = {
+            // Empirista critica
+            '0-1': 'Tu pragmatismo ignora la verdad objetiva. La utilidad no define la realidad.',
+            '0-2': 'Tus teorías abstractas carecen de validación empírica. ¿Dónde están los datos?',
+            '0-3': 'Tu escepticismo sin datos es nihilismo. Necesitas evidencia, no solo crítica.',
+            
+            // Pragmático critica
+            '1-0': 'Tus datos son irrelevantes sin aplicación práctica. ¿Para qué sirven?',
+            '1-2': 'Tus conceptos son hermosos pero inútiles. La realidad exige resultados.',
+            '1-3': 'Criticar es fácil. ¿Qué solución práctica propones?',
+            
+            // Teórico critica
+            '2-0': 'Tus mediciones pierden la esencia. Los números no capturan el significado profundo.',
+            '2-1': 'Tu utilitarismo es reduccionista. Hay valor más allá de la mera utilidad.',
+            '2-3': 'Tu crítica carece de marco teórico coherente. Es deconstrucción sin reconstrucción.',
+            
+            // Crítico critica
+            '3-0': '¿Quién decide qué es "objetivo"? Tus datos también tienen sesgos ocultos.',
+            '3-1': '¿Utilidad para quién? Tu pragmatismo oculta asunciones de poder.',
+            '3-2': 'Tus teorías son construcciones sociales disfrazadas de verdad universal.'
+        };
+        
+        return criticas[`${criticaIdx}-${objetivoIdx}`] || 'Tu posición tiene limitaciones evidentes.';
+    }
+
+    async votacionIdeologica() {
+        addToConsole('Cada posición evalúa a las demás según sus propios criterios...\n');
+        
+        for (let votante = 0; votante < 4; votante++) {
+            const e = this.esclavos[votante];
+            addToConsole(`${e.emoji} ${e.nombre} evalúa las posiciones:\n`);
+            
+            for (let candidato = 0; candidato < 4; candidato++) {
+                if (votante === candidato) continue;
+                
+                const voto = this.calcularVotoIdeologico(votante, candidato);
+                
+                this.argumentos[candidato].votos.push({
+                    votante: votante,
+                    valor: voto
+                });
+                
+                const justificacion = this.justificarVotoIdeologico(votante, candidato, voto);
+                addToConsole(`  → Posición ${candidato} (${this.esclavos[candidato].nombre}): ${voto}/10 puntos`);
+                addToConsole(`     ${justificacion}`);
+            }
+            
+            addToConsole('');
+            await this.sleep(400);
+        }
+        
+        // Conteo
+        addToConsole('\n📊 Conteo de votos...\n');
+        
+        let maxVotos = -1;
+        let ganador = 0;
+        
+        for (let i = 0; i < 4; i++) {
+            const totalVotos = this.argumentos[i].votos.reduce((sum, v) => sum + v.valor, 0);
+            this.argumentos[i].total_votos = totalVotos;
+            
+            const porcentaje = ((totalVotos / 30) * 100).toFixed(1);
+            
+            addToConsole(`${this.esclavos[i].emoji} ${this.esclavos[i].nombre}: ${totalVotos}/30 votos (${porcentaje}%)`);
+            addToConsole(`   [${this.getBarraVotos(totalVotos, 30)}]`);
+            
+            const desglose = this.argumentos[i].votos.map(v => 
+                `${this.esclavos[v.votante].emoji}:${v.valor}`
+            ).join(', ');
+            addToConsole(`   ${desglose}\n`);
+            
+            if (totalVotos > maxVotos) {
+                maxVotos = totalVotos;
+                ganador = i;
+            }
+        }
+        
+        await this.sleep(800);
+        return ganador;
+    }
+
+    calcularVotoIdeologico(votante, candidato) {
+        const arg = this.argumentos[candidato];
+        let voto = 0;
+        
+        // Cada posición valora diferentes aspectos
+        switch(votante) {
+            case 0: // Empirista valora fuerza (datos)
+                if (arg.fuerza > 200) voto += 5;
+                else if (arg.fuerza > 150) voto += 3;
+                else if (arg.fuerza > 100) voto += 2;
+                
+                if (arg.coherencia > 150) voto += 3;
+                if (arg.originalidad > 150) voto += 2;
+                break;
+                
+            case 1: // Pragmático valora utilidad
+                if (arg.fuerza > 150) voto += 3;
+                if (arg.coherencia > 200) voto += 4;
+                if (arg.originalidad > 100) voto += 3;
+                break;
+                
+            case 2: // Teórico valora coherencia y originalidad
+                if (arg.coherencia > 200) voto += 5;
+                if (arg.originalidad > 180) voto += 4;
+                if (arg.fuerza > 100) voto += 1;
+                break;
+                
+            case 3: // Crítico busca contradicciones (vota bajo si es muy seguro)
+                if (arg.fuerza < 180) voto += 3;  // Prefiere ambigüedad
+                if (arg.coherencia < 200) voto += 3;
+                if (arg.originalidad > 170) voto += 4;
+                break;
+        }
+        
+        // Sesgo: votar menos a posiciones opuestas
+        const oposiciones = [[0,2], [1,3], [2,0], [3,1]];
+        if (oposiciones.some(([v, c]) => v === votante && c === candidato)) {
+            voto = Math.max(0, voto - 2);
+        }
+        
+        return Math.min(10, voto);
+    }
+
+    justificarVotoIdeologico(votante, candidato, voto) {
+        const frases = {
+            0: { // Empirista
+                high: '✓ Datos sólidos y verificables',
+                med: '≈ Evidencia aceptable pero incompleta',
+                low: '✗ Falta rigor empírico'
+            },
+            1: { // Pragmático
+                high: '✓ Propuesta práctica y aplicable',
+                med: '≈ Utilidad moderada',
+                low: '✗ Poco valor práctico'
+            },
+            2: { // Teórico
+                high: '✓ Coherencia conceptual elegante',
+                med: '≈ Marco teórico aceptable',
+                low: '✗ Carece de profundidad teórica'
+            },
+            3: { // Crítico
+                high: '✓ Plantea preguntas importantes',
+                med: '≈ Análisis parcialmente crítico',
+                low: '✗ Posición acrítica y dogmática'
+            }
+        };
+        
+        const nivel = voto >= 7 ? 'high' : voto >= 4 ? 'med' : 'low';
+        return frases[votante][nivel];
     }
 
     async ejecutarDebate(analysis) {
@@ -1300,7 +1704,122 @@ class SistemaDebate {
         return ganador;
     }
 
-    async imprimirConclusionFinal(ganador, analysis) {
+    async imprimirSintesisFinal(ganador, analysis) {
+        addToConsole('\n' + '═'.repeat(46));
+        addToConsole('🏆 SÍNTESIS DEL DEBATE');
+        addToConsole('═'.repeat(46) + '\n');
+        
+        const esclavo = this.esclavos[ganador];
+        const posicion = this.posiciones[ganador];
+        const arg = this.argumentos[ganador];
+        
+        addToConsole(`🎉 Posición ganadora: ${esclavo.emoji} ${esclavo.nombre}\n`, 'success');
+        
+        addToConsole('📝 VEREDICTO DEL DEBATE:\n');
+        addToConsole(`El documento "${analysis.title}"`);
+        addToConsole(`debe interpretarse desde una perspectiva ${posicion.nombre.toUpperCase()}.\n`);
+        
+        addToConsole('💡 FUNDAMENTACIÓN:\n');
+        
+        // Justificación personalizada según posición ganadora
+        if (ganador === 0) { // Empirista
+            addToConsole('La posición EMPIRISTA prevalece porque este documento');
+            addToConsole('se presta mejor a análisis objetivo basado en datos.');
+            addToConsole('Los hechos verificables y la evidencia cuantificable');
+            addToConsole('son la mejor herramienta para comprenderlo.');
+        } else if (ganador === 1) { // Pragmático
+            addToConsole('La posición PRAGMÁTICA prevalece porque este documento');
+            addToConsole('tiene valor principalmente por su utilidad práctica.');
+            addToConsole('Lo importante no es la teoría sino qué podemos hacer');
+            addToConsole('con esta información en la realidad concreta.');
+        } else if (ganador === 2) { // Teórico
+            addToConsole('La posición TEÓRICA prevalece porque este documento');
+            addToConsole('requiere análisis conceptual profundo para comprenderlo.');
+            addToConsole('Las ideas abstractas y los marcos teóricos son');
+            addToConsole('esenciales para capturar su significado completo.');
+        } else { // Crítico
+            addToConsole('La posición CRÍTICA prevalece porque este documento');
+            addToConsole('contiene supuestos que deben ser cuestionados.');
+            addToConsole('Solo mediante el análisis dialéctico y el escepticismo');
+            addToConsole('podemos revelar las contradicciones subyacentes.');
+        }
+        
+        addToConsole('');
+        addToConsole(`📈 Evaluación del argumento ganador:`);
+        addToConsole(`   • Fuerza: ${arg.fuerza}/255 (${(arg.fuerza/255*100).toFixed(1)}%)`);
+        addToConsole(`   • Coherencia: ${arg.coherencia}/255 (${(arg.coherencia/255*100).toFixed(1)}%)`);
+        addToConsole(`   • Originalidad: ${arg.originalidad}/255 (${(arg.originalidad/255*100).toFixed(1)}%)`);
+        addToConsole(`   • Votos recibidos: ${arg.total_votos}/30 (${(arg.total_votos/30*100).toFixed(1)}%)`);
+        addToConsole('');
+        
+        addToConsole(`🎭 Bias reconocido: ${posicion.bias}`);
+        addToConsole('');
+        
+        addToConsole('✅ El debate ha concluido. Interpretación establecida.\n', 'success');
+        
+        // Si hay Arduino conectado, enviar resultado
+        if (isConnected) {
+            await sendCmd(`DEBATE_POSITION|${ganador}|${posicion.nombre}`);
+        }
+    }
+
+    mostrarResultadoDebate(ganador, analysis) {
+        const container = document.getElementById('debateResults') || this.crearPanelDebate();
+        
+        let html = '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 2px; color: white; margin-top: 20px; border: 1px solid #a2a9b1;">';
+        html += '<h3 style="margin: 0 0 15px 0; text-align: center;">🎭 RESULTADO DEL DEBATE IDEOLÓGICO</h3>';
+        
+        // Ganador destacado
+        const esclavo = this.esclavos[ganador];
+        const posicion = this.posiciones[ganador];
+        html += '<div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 2px; margin-bottom: 15px; text-align: center;">';
+        html += `<div style="font-size: 48px; margin-bottom: 10px;">${posicion.emoji}</div>`;
+        html += `<div style="font-size: 24px; font-weight: bold;">${posicion.nombre}</div>`;
+        html += `<div style="margin-top: 10px; font-size: 16px; font-style: italic;">"${posicion.ideologia}"</div>`;
+        html += `<div style="margin-top: 10px; font-size: 18px;">${this.argumentos[ganador].total_votos}/30 votos</div>`;
+        html += '</div>';
+        
+        // Interpretación del documento
+        html += '<div style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 2px; line-height: 1.6; margin-bottom: 15px;">';
+        html += `<strong>📝 Interpretación:</strong><br>`;
+        html += `"${analysis.title}" debe analizarse desde una perspectiva <strong>${posicion.nombre.toUpperCase()}</strong><br><br>`;
+        
+        html += `<strong>🎯 Enfoque:</strong> ${posicion.bias}<br><br>`;
+        
+        // Tabla de resultados
+        html += '<strong>📊 Resultados del Debate:</strong><br>';
+        html += '<table style="width: 100%; margin-top: 10px; border-collapse: collapse;">';
+        
+        // Ordenar por votos
+        const ranking = [...this.argumentos].sort((a, b) => b.total_votos - a.total_votos);
+        
+        ranking.forEach((arg, idx) => {
+            const e = this.esclavos[arg.esclavo];
+            const p = this.posiciones[arg.esclavo];
+            const emoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '📍';
+            const bg = idx === 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)';
+            
+            html += `<tr style="background: ${bg};">`;
+            html += `<td style="padding: 8px;">${emoji}</td>`;
+            html += `<td style="padding: 8px;">${p.emoji} ${p.nombre}</td>`;
+            html += `<td style="padding: 8px; text-align: right;">${arg.total_votos} votos</td>`;
+            html += '</tr>';
+        });
+        
+        html += '</table>';
+        html += '</div>';
+        
+        // Confrontaciones clave
+        html += '<div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 2px; font-size: 13px;">';
+        html += '<strong>⚔️ Confrontaciones:</strong><br>';
+        html += `• ${this.posiciones[0].emoji} Empirista vs ${this.posiciones[2].emoji} Teórico: Datos vs Ideas<br>`;
+        html += `• ${this.posiciones[1].emoji} Pragmático vs ${this.posiciones[3].emoji} Crítico: Acción vs Reflexión`;
+        html += '</div>';
+        
+        html += '</div>';
+        
+        container.innerHTML = html;
+    }
         addToConsole('\n' + '═'.repeat(46));
         addToConsole('🏆 CONCLUSIÓN DEL DEBATE');
         addToConsole('═'.repeat(46) + '\n');
