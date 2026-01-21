@@ -260,6 +260,135 @@
         }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Tooltips y ayuda */
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+            margin-left: 8px;
+            position: relative;
+        }
+        
+        .info-icon:hover {
+            background: #5568d3;
+        }
+        
+        .tooltip {
+            visibility: hidden;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1e1e;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+            width: 280px;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            font-weight: normal;
+        }
+        
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e1e1e transparent transparent transparent;
+        }
+        
+        .info-icon:hover .tooltip {
+            visibility: visible;
+        }
+        
+        .help-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .help-section h3 {
+            color: #1976d2;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .help-section ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .help-section ul li {
+            margin-bottom: 8px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 12px;
+        }
+        
+        .metric-card h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .metric-card p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        .collapsible-section {
+            margin-top: 20px;
+        }
+        
+        .collapsible-header {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #667eea;
+            transition: background 0.3s;
+        }
+        
+        .collapsible-header:hover {
+            background: #e9ecef;
+        }
+        
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .collapsible-content.active {
+            max-height: 2000px;
+        }
     </style>
 </head>
 <body>
@@ -333,8 +462,165 @@
                 <div class="console-line">⚡ Usa Chrome/Edge para conectar con Arduino</div>
             </div>
         </div>
+
+        <!-- Sección de Ayuda -->
+        <div class="panel full-width">
+            <div class="panel-header">
+                <h2 class="panel-title">❓ Guía de Indicadores</h2>
+            </div>
+
+            <div class="help-section">
+                <h3>📊 Métricas Principales</h3>
+                
+                <div class="metric-card">
+                    <h4>
+                        Peso Semántico
+                        <span class="info-icon">i
+                            <span class="tooltip">
+                                Mide la riqueza y distribución del vocabulario. Basado en entropía de Shannon.
+                                <br><br>
+                                • Alto (>0.7): Vocabulario diverso y uniforme
+                                <br>• Medio (0.4-0.7): Vocabulario balanceado
+                                <br>• Bajo (<0.4): Vocabulario concentrado
+                            </span>
+                        </span>
+                    </h4>
+                    <p>
+                        <strong>Rango:</strong> 0.0 - 1.0<br>
+                        <strong>Fórmula:</strong> H(vector) / H_max × (1 + riqueza_vocabular)<br>
+                        <strong>Uso:</strong> Indica qué tan "rica" es la información del texto
+                    </p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>
+                        Coherencia Holográfica
+                        <span class="info-icon">i
+                            <span class="tooltip">
+                                Mide la fidelidad de la correspondencia Bulk-Boundary (AdS/CFT).
+                                <br><br>
+                                • 🟢 >0.8: Excelente reconstrucción
+                                <br>• 🟡 >0.6: Buena preservación
+                                <br>• 🟠 >0.4: Moderada
+                                <br>• 🔴 <0.4: Información comprometida
+                            </span>
+                        </span>
+                    </h4>
+                    <p>
+                        <strong>Rango:</strong> 0.0 - 1.0<br>
+                        <strong>Componentes:</strong> Correlación Boundary + Densidad Bulk<br>
+                        <strong>Uso:</strong> Valida que los esclavos I2C preservan la información del maestro
+                    </p>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h3>🎯 Categorías Semánticas</h3>
+                <div class="metric-card">
+                    <h4>Distribución por Tipo de Contenido</h4>
+                    <p>
+                        <strong>• Entidades:</strong> Nombres propios, lugares, organizaciones<br>
+                        <strong>• Acciones:</strong> Verbos y procesos<br>
+                        <strong>• Conceptos:</strong> Teorías, principios, ideas abstractas<br>
+                        <strong>• Propiedades:</strong> Características, tipos, clases<br>
+                        <strong>• Relaciones:</strong> Conectores entre elementos<br>
+                        <strong>• Temporales:</strong> Referencias de tiempo
+                    </p>
+                </div>
+                <p><strong>Uso práctico:</strong> Cada categoría mapea a un esclavo I2C. Alto valor en "conceptos" significa que el esclavo 2 tendrá un estado elevado.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>🎛️ Estados Quantum32</h3>
+                
+                <div class="metric-card">
+                    <h4>
+                        Boundary States (Esclavos I2C)
+                        <span class="info-icon">i
+                            <span class="tooltip">
+                                Cada esclavo recibe un estado de 0-255 basado en su categoría semántica.
+                                <br><br>
+                                La norma L2 del chunk se multiplica por (1 + peso_categoría × 0.5)
+                            </span>
+                        </span>
+                    </h4>
+                    <p>
+                        <strong>Direcciones I2C:</strong> 0x10, 0x11, 0x12, 0x13<br>
+                        <strong>Rango:</strong> 0-255 por esclavo<br>
+                        <strong>Cálculo:</strong> Norma L2 del chunk × boost semántico<br>
+                        <strong>Boost:</strong> Hasta +50% según importancia de la categoría
+                    </p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>
+                        Bulk Mask (Maestro ESP32)
+                        <span class="info-icon">i
+                            <span class="tooltip">
+                                Máscara de 32 bits con threshold adaptativo.
+                                <br><br>
+                                Threshold = media + desviación_estándar × 0.5
+                                <br><br>
+                                Detecta características verdaderamente dominantes del texto.
+                            </span>
+                        </span>
+                    </h4>
+                    <p>
+                        <strong>Formato:</strong> 32 bits (0xFFFFFFFF)<br>
+                        <strong>Threshold:</strong> Adaptativo (media + σ/2)<br>
+                        <strong>Bits activos:</strong> Indica concentración de información<br>
+                        <strong>Óptimo:</strong> 40-60% de bits activos (12-19 bits)
+                    </p>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h3>💡 Densidad Léxica</h3>
+                <p>
+                    <strong>• Palabras Totales:</strong> Conteo completo del documento<br>
+                    <strong>• Palabras Únicas:</strong> Vocabulario sin repeticiones<br>
+                    <strong>• Riqueza Vocabular:</strong> Únicas / √Totales (normalizado)
+                </p>
+                <p><strong>Interpretación:</strong> Riqueza >15 indica documento técnico o académico. Riqueza <8 indica documento repetitivo o simple.</p>
+            </div>
+
+            <div class="collapsible-section">
+                <div class="collapsible-header" onclick="toggleCollapsible('advanced')">
+                    <span>🔬 Detalles Técnicos Avanzados</span>
+                    <span id="advanced-icon">▼</span>
+                </div>
+                <div id="advanced-content" class="collapsible-content">
+                    <div style="padding: 20px; background: white; margin-top: 10px; border-radius: 8px;">
+                        <h4>Vectorización TF-IDF</h4>
+                        <p><strong>TF (Term Frequency):</strong> tf = count(palabra) / total_palabras</p>
+                        <p><strong>IDF (Inverse Document Frequency):</strong> idf = log((N+1) / (df+1)) + 1</p>
+                        <p><strong>Vector final:</strong> TF-IDF normalizado con norma L2</p>
+                        <p><strong>Stop words:</strong> 150+ palabras filtradas (artículos, pronombres, preposiciones)</p>
+                        
+                        <h4 style="margin-top: 20px;">Correspondencia AdS/CFT</h4>
+                        <p><strong>Bulk (d+1):</strong> Maestro ESP32 con visión global (32-bit mask)</p>
+                        <p><strong>Boundary (d):</strong> 4 Esclavos I2C con información local</p>
+                        <p><strong>Holografía:</strong> La información del bulk se puede reconstruir desde el boundary</p>
+                        <p><strong>Coherencia:</strong> Mide qué tan bien se preserva la información en la proyección</p>
+                        
+                        <h4 style="margin-top: 20px;">Protocolo Serial</h4>
+                        <p><strong>Formato:</strong> START|título|b0,b1,b2,b3|mask|weight|END</p>
+                        <p><strong>Ejemplo:</strong> START|IA|145,112,178,98|2777788434|0.7845|END</p>
+                        <p><strong>Baudrate:</strong> 115200 bps</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script>
+        function toggleCollapsible(id) {
+            const content = document.getElementById(id + '-content');
+            const icon = document.getElementById(id + '-icon');
+            content.classList.toggle('active');
+            icon.textContent = content.classList.contains('active') ? '▲' : '▼';
+        }
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
