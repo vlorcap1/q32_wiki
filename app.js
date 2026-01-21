@@ -456,14 +456,54 @@ class EnhancedQuantum32Adapter {
             threshold = 0.5;
         }
 
+        // QUANTUM32: Identificar bits cerca del threshold (zona de incertidumbre)
+        const uncertaintyBits = [];
+        const uncertaintyWindow = 0.15; // ±15% del threshold
+        
+        vector.forEach((val, idx) => {
+            const distance = Math.abs(val - threshold);
+            const relativeDistance = distance / (threshold + 1e-10);
+            
+            // Si está muy cerca del threshold, es un bit "inestable"
+            if (relativeDistance < uncertaintyWindow) {
+                uncertaintyBits.push({
+                    index: idx,
+                    value: val,
+                    distance: distance,
+                    probability: 0.5 + (val - threshold) / (threshold * 2) // 0.3 a 0.7
+                });
+            }
+        });
+
+        // Construir máscara base (determinista)
         let mask = 0;
         for (let i = 0; i < vector.length; i++) {
             if (vector[i] > threshold) {
                 mask |= (1 << i);
             }
         }
+        
+        // QUANTUM32: Para bits inestables, usar probabilidad cuántica
+        // El bit fluctúa según su proximidad al threshold
+        uncertaintyBits.forEach(bit => {
+            const shouldFlip = Math.random() < bit.probability;
+            
+            if (shouldFlip) {
+                // Toggle el bit (flip cuántico)
+                mask ^= (1 << bit.index);
+            }
+        });
 
-        return mask;
+        // Retornar máscara + metadatos cuánticos
+        return {
+            mask: mask,
+            threshold: threshold,
+            uncertainBits: uncertaintyBits.map(b => ({
+                index: b.index,
+                probability: b.probability,
+                value: b.value
+            }))
+        };
     }
 
     // Calcular entropía de Shannon (semantic weight mejorado)
@@ -583,9 +623,9 @@ function processText(title, text) {
     // Quantum32 con contexto semántico
     const adapter = new EnhancedQuantum32Adapter(4);
     const boundaryStates = adapter.vectorToBoundaryStates(vector, semanticCategories);
-    const bulkMask = adapter.vectorToBulkMask(vector, true); // Threshold adaptativo
+    const bulkMaskData = adapter.vectorToBulkMask(vector, true); // Retorna objeto con mask + metadata
     const semanticWeight = adapter.calculateSemanticWeight(vector, densityInfo);
-    const holographicCoherence = adapter.calculateHolographicCoherence(vector, boundaryStates, bulkMask);
+    const holographicCoherence = adapter.calculateHolographicCoherence(vector, boundaryStates, bulkMaskData.mask);
 
     return {
         title: title,
@@ -598,12 +638,18 @@ function processText(title, text) {
         // Quantum32 data
         quantum32_data: {
             boundary_states: boundaryStates,
-            bulk_mask: bulkMask,
-            bulk_mask_hex: '0x' + bulkMask.toString(16).toUpperCase().padStart(8, '0'),
-            bulk_mask_bin: '0b' + bulkMask.toString(2).padStart(32, '0'),
+            bulk_mask: bulkMaskData.mask,
+            bulk_mask_hex: '0x' + bulkMaskData.mask.toString(16).toUpperCase().padStart(8, '0'),
+            bulk_mask_bin: '0b' + bulkMaskData.mask.toString(2).padStart(32, '0'),
             semantic_weight: semanticWeight,
-            bits_active: bulkMask.toString(2).split('1').length - 1,
-            holographic_coherence: holographicCoherence
+            bits_active: bulkMaskData.mask.toString(2).split('1').length - 1,
+            holographic_coherence: holographicCoherence,
+            // NUEVO: Metadatos cuánticos
+            quantum_metadata: {
+                threshold: bulkMaskData.threshold,
+                uncertain_bits: bulkMaskData.uncertainBits,
+                num_uncertain: bulkMaskData.uncertainBits.length
+            }
         },
         
         // Análisis semántico
@@ -835,59 +881,89 @@ function displayQuantum32States(data, container) {
     });
     html += '</div>';
 
-    // Bulk mask con interpretación y bit inestable
+    // Bulk mask con interpretación y TODOS los bits cuánticos
     html += '<div style="margin-top: 20px;">';
     html += '<strong>🔮 Máscara del Bulk (Reconstrucción Holográfica)';
     html += '<span class="info-icon">i';
     html += '<span class="tooltip">';
     html += 'Máscara de 32 bits con threshold adaptativo.<br><br>';
-    html += 'Threshold = media + σ/2<br><br>';
-    html += 'Óptimo: 40-60% bits activos (12-19 bits)<br><br>';
-    html += '<strong>Bit Inestable:</strong> Simula superposición cuántica (parpadea entre estados)';
+    html += 'Cada bit tiene probabilidad cuántica basada en su distancia al threshold.<br><br>';
+    html += '<strong>Bits Inestables:</strong> Valores cerca del threshold fluctúan (superposición cuántica)';
     html += '</span></span>';
     html += ':</strong>';
+    
+    const qm = q32.quantum_metadata;
+    
     html += `<div style="background: #1e1e1e; color: #00ff00; padding: 10px; border-radius: 5px; margin-top: 10px; font-family: monospace;">`;
     html += `HEX: ${q32.bulk_mask_hex}<br>`;
     html += `Bits activos: ${q32.bits_active}/32 (${(q32.bits_active/32*100).toFixed(1)}%)<br>`;
+    html += `Threshold: ${qm.threshold.toFixed(4)}<br>`;
     html += `Coherencia: ${q32.holographic_coherence.toFixed(3)} - ${getCoherenceLabel(q32.holographic_coherence)}<br>`;
-    html += `⚛️ Bit inestable: <span style="color: #fc3;">Simulando superposición cuántica</span>`;
+    html += `⚛️ Bits inestables: <span style="color: #fc3;">${qm.num_uncertain} bits en superposición cuántica</span>`;
     html += '</div>';
+
+    // Crear un mapa de bits inestables
+    const unstableMap = {};
+    qm.uncertain_bits.forEach(bit => {
+        unstableMap[bit.index] = bit;
+    });
 
     html += '<div class="bit-pattern" style="margin-top: 10px;">';
     const binStr = q32.bulk_mask.toString(2).padStart(32, '0');
     
-    // Seleccionar un bit "inestable" (el bit con valor más cercano al threshold)
-    const unstableBit = data.vector.reduce((minIdx, val, idx) => {
-        const currentDiff = Math.abs(val - (data.vector.reduce((a,b) => a+b) / data.vector.length));
-        const minDiff = Math.abs(data.vector[minIdx] - (data.vector.reduce((a,b) => a+b) / data.vector.length));
-        return currentDiff < minDiff ? idx : minIdx;
-    }, 0);
-    
     for (let i = 0; i < 32; i++) {
         const bit = binStr[31 - i];
-        const isUnstable = (i === unstableBit);
+        const isUnstable = unstableMap.hasOwnProperty(i);
         const classes = ['bit'];
+        let title = '';
         
         if (isUnstable) {
             classes.push('unstable');
+            const prob = (unstableMap[i].probability * 100).toFixed(1);
+            const val = unstableMap[i].value.toFixed(4);
+            title = `Bit ${i}: INESTABLE ⚛️\nValor: ${val}\nProbabilidad: ${prob}%\nSuperposición: |0⟩ + |1⟩\n(cerca del threshold)`;
         } else if (bit === '1') {
             classes.push('active');
+            title = `Bit ${i}: ACTIVO (1)\nDimensión ${i} supera el threshold`;
+        } else {
+            title = `Bit ${i}: INACTIVO (0)\nDimensión ${i} está bajo el threshold`;
         }
-        
-        const title = isUnstable 
-            ? `Bit ${i}: INESTABLE - Superposición cuántica (|0⟩ + |1⟩)`
-            : `Bit ${i}: ${bit === '1' ? 'Activo' : 'Inactivo'}`;
         
         html += `<div class="${classes.join(' ')}" title="${title}">${i}</div>`;
     }
     html += '</div>';
     
-    html += '<div style="background: #f8f9fa; padding: 12px; border-radius: 5px; margin-top: 10px; border: 1px solid #a2a9b1; font-size: 13px;">';
-    html += `<strong>⚛️ Bit Inestable Detectado: Bit ${unstableBit}</strong><br>`;
-    html += `Este bit está en superposición cuántica, oscilando entre estado 0 y 1.<br>`;
-    html += `Representa incertidumbre semántica en la dimensión ${unstableBit} del vector.<br>`;
-    html += `<em>Parpadea para simular el colapso de la función de onda.</em>`;
-    html += '</div>';
+    // Mostrar detalles de los bits inestables
+    if (qm.num_uncertain > 0) {
+        html += '<div style="background: #fef6e7; padding: 12px; border-radius: 5px; margin-top: 10px; border: 1px solid #fc3; font-size: 13px;">';
+        html += `<strong>⚛️ ${qm.num_uncertain} Bits en Superposición Cuántica:</strong><br><br>`;
+        
+        qm.uncertain_bits.forEach((bit, idx) => {
+            const prob = (bit.probability * 100).toFixed(1);
+            const icon = bit.probability > 0.6 ? '🔼' : bit.probability < 0.4 ? '🔽' : '⚖️';
+            html += `${icon} <strong>Bit ${bit.index}:</strong> `;
+            html += `Valor=${bit.value.toFixed(4)}, `;
+            html += `P(1)=${prob}%`;
+            
+            if (bit.probability > 0.6) {
+                html += ` <span style="color: #00af89;">(tiende a activarse)</span>`;
+            } else if (bit.probability < 0.4) {
+                html += ` <span style="color: #d33;">(tiende a desactivarse)</span>`;
+            } else {
+                html += ` <span style="color: #fc3;">(máxima incertidumbre)</span>`;
+            }
+            html += '<br>';
+        });
+        
+        html += '<br><em style="color: #54595d;">Estos bits fluctúan porque sus valores están muy cerca del threshold adaptativo. ';
+        html += 'Representan incertidumbre semántica en esas dimensiones del vector.</em>';
+        html += '</div>';
+    } else {
+        html += '<div style="background: #f0fdf4; padding: 12px; border-radius: 5px; margin-top: 10px; border: 1px solid #00af89; font-size: 13px;">';
+        html += '<strong>✅ Sistema Estable:</strong> Todos los bits tienen valores definidos (lejos del threshold).<br>';
+        html += '<em>No hay incertidumbre cuántica en este análisis.</em>';
+        html += '</div>';
+    }
     
     html += '</div>';
 
