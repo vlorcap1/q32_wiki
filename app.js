@@ -835,29 +835,60 @@ function displayQuantum32States(data, container) {
     });
     html += '</div>';
 
-    // Bulk mask con interpretación y tooltip
+    // Bulk mask con interpretación y bit inestable
     html += '<div style="margin-top: 20px;">';
     html += '<strong>🔮 Máscara del Bulk (Reconstrucción Holográfica)';
     html += '<span class="info-icon">i';
     html += '<span class="tooltip">';
     html += 'Máscara de 32 bits con threshold adaptativo.<br><br>';
     html += 'Threshold = media + σ/2<br><br>';
-    html += 'Óptimo: 40-60% bits activos (12-19 bits)';
+    html += 'Óptimo: 40-60% bits activos (12-19 bits)<br><br>';
+    html += '<strong>Bit Inestable:</strong> Simula superposición cuántica (parpadea entre estados)';
     html += '</span></span>';
     html += ':</strong>';
     html += `<div style="background: #1e1e1e; color: #00ff00; padding: 10px; border-radius: 5px; margin-top: 10px; font-family: monospace;">`;
     html += `HEX: ${q32.bulk_mask_hex}<br>`;
     html += `Bits activos: ${q32.bits_active}/32 (${(q32.bits_active/32*100).toFixed(1)}%)<br>`;
-    html += `Coherencia: ${q32.holographic_coherence.toFixed(3)} - ${getCoherenceLabel(q32.holographic_coherence)}`;
+    html += `Coherencia: ${q32.holographic_coherence.toFixed(3)} - ${getCoherenceLabel(q32.holographic_coherence)}<br>`;
+    html += `⚛️ Bit inestable: <span style="color: #fc3;">Simulando superposición cuántica</span>`;
     html += '</div>';
 
     html += '<div class="bit-pattern" style="margin-top: 10px;">';
     const binStr = q32.bulk_mask.toString(2).padStart(32, '0');
+    
+    // Seleccionar un bit "inestable" (el bit con valor más cercano al threshold)
+    const unstableBit = data.vector.reduce((minIdx, val, idx) => {
+        const currentDiff = Math.abs(val - (data.vector.reduce((a,b) => a+b) / data.vector.length));
+        const minDiff = Math.abs(data.vector[minIdx] - (data.vector.reduce((a,b) => a+b) / data.vector.length));
+        return currentDiff < minDiff ? idx : minIdx;
+    }, 0);
+    
     for (let i = 0; i < 32; i++) {
         const bit = binStr[31 - i];
-        html += `<div class="bit ${bit === '1' ? 'active' : ''}" title="Bit ${i}: ${bit === '1' ? 'Activo' : 'Inactivo'}">${i}</div>`;
+        const isUnstable = (i === unstableBit);
+        const classes = ['bit'];
+        
+        if (isUnstable) {
+            classes.push('unstable');
+        } else if (bit === '1') {
+            classes.push('active');
+        }
+        
+        const title = isUnstable 
+            ? `Bit ${i}: INESTABLE - Superposición cuántica (|0⟩ + |1⟩)`
+            : `Bit ${i}: ${bit === '1' ? 'Activo' : 'Inactivo'}`;
+        
+        html += `<div class="${classes.join(' ')}" title="${title}">${i}</div>`;
     }
     html += '</div>';
+    
+    html += '<div style="background: #f8f9fa; padding: 12px; border-radius: 5px; margin-top: 10px; border: 1px solid #a2a9b1; font-size: 13px;">';
+    html += `<strong>⚛️ Bit Inestable Detectado: Bit ${unstableBit}</strong><br>`;
+    html += `Este bit está en superposición cuántica, oscilando entre estado 0 y 1.<br>`;
+    html += `Representa incertidumbre semántica en la dimensión ${unstableBit} del vector.<br>`;
+    html += `<em>Parpadea para simular el colapso de la función de onda.</em>`;
+    html += '</div>';
+    
     html += '</div>';
 
     container.innerHTML = html;
@@ -906,6 +937,13 @@ async function handleAnalyze() {
 
         document.getElementById('sendBtn').disabled = !isConnected;
         
+        // NUEVO: Agregar botón de debate
+        const debateBtn = document.createElement('button');
+        debateBtn.textContent = '💬 Iniciar Debate';
+        debateBtn.style.cssText = 'margin-top: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100%;';
+        debateBtn.onclick = () => sistemaDebate.ejecutarDebate(analysis);
+        statesDiv.appendChild(debateBtn);
+        
         addToConsole(`✅ Análisis completado: ${title}`, 'success');
         showNotification('Análisis completado', 'success');
     } catch (error) {
@@ -918,6 +956,411 @@ async function handleAnalyze() {
 
 // ===============================================
 // INICIALIZACIÓN
+// ===============================================
+
+// ===============================================
+// SISTEMA DE DEBATE ENTRE ESCLAVOS
+// ===============================================
+
+class SistemaDebate {
+    constructor() {
+        this.argumentos = [];
+        this.esclavos = [];
+        this.categorias = ['👥 Entidades', '⚡ Acciones', '💡 Conceptos', '🔧 Propiedades'];
+        this.historialDebates = [];
+    }
+
+    inicializar(analysis) {
+        this.esclavos = [];
+        this.argumentos = [];
+        
+        const q32 = analysis.quantum32_data;
+        const semantic = analysis.semantic_analysis;
+        const categoryKeys = Object.keys(semantic.categories);
+        
+        // Crear perfiles de esclavos
+        for (let i = 0; i < 4; i++) {
+            this.esclavos.push({
+                id: i,
+                nombre: this.categorias[i],
+                estado: q32.boundary_states[i],
+                peso_semantico: semantic.categories[categoryKeys[i]] || 0,
+                victorias: 0,
+                derrotas: 0
+            });
+        }
+    }
+
+    async ejecutarDebate(analysis) {
+        this.inicializar(analysis);
+        
+        addToConsole('\n╔════════════════════════════════════════════╗', 'success');
+        addToConsole('║       💬 INICIANDO DEBATE FORMAL          ║', 'success');
+        addToConsole('╚════════════════════════════════════════════╝\n', 'success');
+        
+        this.imprimirFraseInicial(analysis);
+        await this.sleep(1000);
+        
+        // FASE 1: Presentación de argumentos
+        addToConsole('\n┌────────────────────────────────────────────┐');
+        addToConsole('│  📋 FASE 1: PRESENTACIÓN DE ARGUMENTOS    │');
+        addToConsole('└────────────────────────────────────────────┘\n');
+        await this.presentarArgumentos(analysis);
+        await this.sleep(1500);
+        
+        // FASE 2: Votación cruzada
+        addToConsole('\n┌────────────────────────────────────────────┐');
+        addToConsole('│  🗳️  FASE 2: VOTACIÓN CRUZADA             │');
+        addToConsole('└────────────────────────────────────────────┘\n');
+        await this.votacionCruzada();
+        await this.sleep(1500);
+        
+        // FASE 3: Conteo y resultado
+        addToConsole('\n┌────────────────────────────────────────────┐');
+        addToConsole('│  📊 FASE 3: CONTEO Y RESULTADO            │');
+        addToConsole('└────────────────────────────────────────────┘\n');
+        const ganador = await this.contarVotos();
+        await this.sleep(1000);
+        
+        // FASE 4: Conclusión
+        await this.imprimirConclusionFinal(ganador, analysis);
+        
+        // Actualizar estadísticas
+        this.esclavos[ganador].victorias++;
+        this.esclavos.forEach((e, i) => {
+            if (i !== ganador) e.derrotas++;
+        });
+        
+        // Guardar en historial
+        this.historialDebates.push({
+            documento: analysis.title,
+            ganador: ganador,
+            timestamp: new Date().toISOString(),
+            argumentos: [...this.argumentos]
+        });
+        
+        // Visualizar resultado
+        this.mostrarResultadoDebate(ganador, analysis);
+        
+        return ganador;
+    }
+
+    imprimirFraseInicial(analysis) {
+        addToConsole(`📄 Se convoca debate sobre: "${analysis.title}"`);
+        addToConsole('');
+        addToConsole('Los 4 esclavos Quantum32 se reúnen para determinar');
+        addToConsole('qué aspecto semántico DOMINA este documento.');
+        addToConsole('');
+        addToConsole('Cada esclavo presentará argumentos basados en:');
+        addToConsole('  • Su estado actual (intensidad 0-255)');
+        addToConsole('  • La relevancia de su categoría semántica');
+        addToConsole('  • La coherencia con el documento completo');
+        addToConsole('');
+        addToConsole('Los esclavos votarán entre ellos para elegir al ganador.');
+        addToConsole('');
+    }
+
+    async presentarArgumentos(analysis) {
+        addToConsole('Los esclavos construyen sus argumentos...\n');
+        
+        const q32 = analysis.quantum32_data;
+        const semantic = analysis.semantic_analysis;
+        
+        for (let i = 0; i < 4; i++) {
+            const esclavo = this.esclavos[i];
+            
+            // Calcular métricas del argumento
+            const fuerza = esclavo.estado;
+            const relevancia = Math.round(esclavo.peso_semantico * 255);
+            const coherencia = Math.round(q32.holographic_coherence * 255);
+            
+            this.argumentos.push({
+                esclavo: i,
+                fuerza: fuerza,
+                relevancia: relevancia,
+                coherencia: coherencia,
+                score: fuerza + relevancia + coherencia,
+                votos: []
+            });
+            
+            this.imprimirArgumentoDetallado(i, analysis);
+            await this.sleep(800);
+        }
+    }
+
+    imprimirArgumentoDetallado(idx, analysis) {
+        const arg = this.argumentos[idx];
+        const esclavo = this.esclavos[idx];
+        
+        addToConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        addToConsole(`🎤 Esclavo ${idx} (${esclavo.nombre}) toma la palabra:\n`);
+        
+        addToConsole(`  "Honorable asamblea, presento mi argumento`);
+        addToConsole(`   sobre el documento '${analysis.title}':\n`);
+        
+        const categoria = esclavo.nombre.substring(2); // Quitar emoji
+        addToConsole(`   Mi categoría (${categoria}) tiene una`);
+        addToConsole(`   presencia de ${arg.fuerza}/255 en este texto.\n`);
+        
+        addToConsole(`   Métricas de mi argumento:`);
+        addToConsole(`   ├─ Fuerza:      ${arg.fuerza}/255 [${this.getBarra(arg.fuerza)}]`);
+        addToConsole(`   ├─ Relevancia:  ${arg.relevancia}/255 [${this.getBarra(arg.relevancia)}]`);
+        addToConsole(`   └─ Coherencia:  ${arg.coherencia}/255 [${this.getBarra(arg.coherencia)}]`);
+        addToConsole('');
+        
+        // Evaluación cualitativa
+        const score = arg.score;
+        let evaluacion = '';
+        
+        if (score > 600) {
+            evaluacion = '   ✨ Este es un argumento MUY FUERTE y convincente."';
+        } else if (score > 450) {
+            evaluacion = '   💪 Este es un argumento SÓLIDO y razonable."';
+        } else if (score > 300) {
+            evaluacion = '   👍 Este es un argumento VÁLIDO pero moderado."';
+        } else {
+            evaluacion = '   🤔 Este es un argumento DÉBIL que requiere más evidencia."';
+        }
+        
+        addToConsole(evaluacion);
+        addToConsole('');
+    }
+
+    async votacionCruzada() {
+        addToConsole('Cada esclavo evalúa los argumentos de los demás');
+        addToConsole('y emite su voto basándose en criterios objetivos:\n');
+        
+        for (let votante = 0; votante < 4; votante++) {
+            addToConsole(`👤 Esclavo ${votante} (${this.esclavos[votante].nombre}) evalúa:\n`);
+            
+            for (let candidato = 0; candidato < 4; candidato++) {
+                if (votante === candidato) continue; // No votar por sí mismo
+                
+                const arg = this.argumentos[candidato];
+                const voto = this.calcularVoto(votante, candidato, arg);
+                
+                this.argumentos[candidato].votos.push({
+                    votante: votante,
+                    valor: voto
+                });
+                
+                addToConsole(`  → Argumento de Esclavo ${candidato}: ${voto}/10 puntos`);
+                this.imprimirJustificacionVoto(votante, candidato, voto, arg);
+            }
+            
+            addToConsole('');
+            await this.sleep(500);
+        }
+    }
+
+    calcularVoto(votante, candidato, arg) {
+        // Criterios de votación
+        let voto = 0;
+        
+        // Fuerza del argumento (máx 4 puntos)
+        if (arg.fuerza > 200) voto += 4;
+        else if (arg.fuerza > 150) voto += 3;
+        else if (arg.fuerza > 100) voto += 2;
+        else if (arg.fuerza > 50) voto += 1;
+        
+        // Relevancia (máx 3 puntos)
+        if (arg.relevancia > 200) voto += 3;
+        else if (arg.relevancia > 150) voto += 2;
+        else if (arg.relevancia > 100) voto += 1;
+        
+        // Coherencia (máx 3 puntos)
+        if (arg.coherencia > 200) voto += 3;
+        else if (arg.coherencia > 150) voto += 2;
+        else if (arg.coherencia > 100) voto += 1;
+        
+        // Sesgo: votar un poco menos a vecinos directos (competencia)
+        if (Math.abs(votante - candidato) === 1) {
+            voto = Math.max(0, voto - 1);
+        }
+        
+        return Math.min(10, voto);
+    }
+
+    imprimirJustificacionVoto(votante, candidato, voto, arg) {
+        if (voto >= 8) {
+            addToConsole(`     ✨ "¡Argumento excepcional! Voto con gran convicción."`);
+        } else if (voto >= 6) {
+            addToConsole(`     👍 "Argumento sólido y bien fundamentado."`);
+        } else if (voto >= 4) {
+            addToConsole(`     😐 "Argumento aceptable, pero podría mejorar."`);
+        } else {
+            addToConsole(`     👎 "Argumento débil, carece de fundamento suficiente."`);
+        }
+    }
+
+    async contarVotos() {
+        addToConsole('Computando votos recibidos por cada argumento...\n');
+        
+        let maxVotos = -1;
+        let ganador = 0;
+        
+        for (let i = 0; i < 4; i++) {
+            const totalVotos = this.argumentos[i].votos.reduce((sum, v) => sum + v.valor, 0);
+            this.argumentos[i].total_votos = totalVotos;
+            
+            const porcentaje = ((totalVotos / 30) * 100).toFixed(1); // 30 = máximo teórico
+            
+            addToConsole(`📊 Esclavo ${i} (${this.esclavos[i].nombre}): ${totalVotos}/30 votos (${porcentaje}%)`);
+            addToConsole(`   [${this.getBarraVotos(totalVotos, 30)}]`);
+            
+            // Mostrar desglose
+            const desglose = this.argumentos[i].votos.map(v => 
+                `E${v.votante}:${v.valor}`
+            ).join(', ');
+            addToConsole(`   Desglose: ${desglose}\n`);
+            
+            if (totalVotos > maxVotos) {
+                maxVotos = totalVotos;
+                ganador = i;
+            }
+        }
+        
+        await this.sleep(800);
+        return ganador;
+    }
+
+    async imprimirConclusionFinal(ganador, analysis) {
+        addToConsole('\n' + '═'.repeat(46));
+        addToConsole('🏆 CONCLUSIÓN DEL DEBATE');
+        addToConsole('═'.repeat(46) + '\n');
+        
+        const esclavo = this.esclavos[ganador];
+        const arg = this.argumentos[ganador];
+        const categoria = esclavo.nombre.substring(2);
+        
+        addToConsole(`🎉 El ganador es: Esclavo ${ganador} (${esclavo.nombre})\n`, 'success');
+        
+        addToConsole('📝 VEREDICTO FINAL:\n');
+        addToConsole(`El documento "${analysis.title}"`);
+        addToConsole(`ha sido clasificado como un texto de tipo ${categoria.toUpperCase()}.\n`);
+        
+        addToConsole('💡 JUSTIFICACIÓN:\n');
+        
+        // Justificación personalizada según categoría
+        if (ganador === 0) { // Entidades
+            addToConsole('Este documento está dominado por ENTIDADES (personas, lugares,');
+            addToConsole('organizaciones). Su contenido se centra en actores específicos');
+            addToConsole('y sus identidades, siendo probable que sea una biografía,');
+            addToConsole('artículo histórico o reporte sobre individuos/instituciones.');
+        } else if (ganador === 1) { // Acciones
+            addToConsole('Este documento está dominado por ACCIONES (verbos, procesos,');
+            addToConsole('procedimientos). Su contenido se centra en el "cómo hacer"');
+            addToConsole('cosas, siendo probable que sea un tutorial, guía práctica');
+            addToConsole('o manual de instrucciones.');
+        } else if (ganador === 2) { // Conceptos
+            addToConsole('Este documento está dominado por CONCEPTOS (teorías, ideas,');
+            addToConsole('principios abstractos). Su contenido se centra en explicar');
+            addToConsole('ideas complejas, siendo probable que sea un artículo');
+            addToConsole('científico, ensayo filosófico o texto académico.');
+        } else { // Propiedades
+            addToConsole('Este documento está dominado por PROPIEDADES (características,');
+            addToConsole('tipos, clasificaciones). Su contenido se centra en describir');
+            addToConsole('atributos y taxonomías, siendo probable que sea una');
+            addToConsole('enciclopedia, catálogo o documento descriptivo.');
+        }
+        
+        addToConsole('');
+        addToConsole(`📈 Métricas del argumento ganador:`);
+        addToConsole(`   • Fuerza: ${arg.fuerza}/255 (${(arg.fuerza/255*100).toFixed(1)}%)`);
+        addToConsole(`   • Relevancia: ${arg.relevancia}/255 (${(arg.relevancia/255*100).toFixed(1)}%)`);
+        addToConsole(`   • Coherencia: ${arg.coherencia}/255 (${(arg.coherencia/255*100).toFixed(1)}%)`);
+        addToConsole(`   • Votos recibidos: ${arg.total_votos}/30 (${(arg.total_votos/30*100).toFixed(1)}%)`);
+        addToConsole('');
+        
+        addToConsole('✅ El debate ha concluido. Consenso alcanzado.\n', 'success');
+        
+        // Si hay Arduino conectado, enviar resultado
+        if (isConnected) {
+            await sendCmd(`DEBATE_WINNER|${ganador}`);
+        }
+    }
+
+    mostrarResultadoDebate(ganador, analysis) {
+        const container = document.getElementById('debateResults') || this.crearPanelDebate();
+        
+        let html = '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; margin-top: 20px;">';
+        html += '<h3 style="margin: 0 0 15px 0; text-align: center;">🏆 RESULTADO DEL DEBATE</h3>';
+        
+        // Ganador destacado
+        const esclavo = this.esclavos[ganador];
+        html += '<div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 8px; margin-bottom: 15px; text-align: center;">';
+        html += `<div style="font-size: 48px; margin-bottom: 10px;">${esclavo.nombre.split(' ')[0]}</div>`;
+        html += `<div style="font-size: 24px; font-weight: bold;">${esclavo.nombre.substring(2)}</div>`;
+        html += `<div style="margin-top: 10px; font-size: 18px;">${this.argumentos[ganador].total_votos}/30 votos</div>`;
+        html += '</div>';
+        
+        // Clasificación del documento
+        const categoria = esclavo.nombre.substring(2);
+        html += '<div style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 8px; line-height: 1.6;">';
+        html += `<strong>📝 Clasificación:</strong><br>`;
+        html += `"${analysis.title}" es un documento de tipo <strong>${categoria.toUpperCase()}</strong><br><br>`;
+        
+        // Tabla de resultados
+        html += '<strong>📊 Tabla de Votos:</strong><br>';
+        html += '<table style="width: 100%; margin-top: 10px; border-collapse: collapse;">';
+        
+        // Ordenar por votos
+        const ranking = [...this.argumentos].sort((a, b) => b.total_votos - a.total_votos);
+        
+        ranking.forEach((arg, idx) => {
+            const e = this.esclavos[arg.esclavo];
+            const emoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '📍';
+            const bg = idx === 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)';
+            
+            html += `<tr style="background: ${bg};">`;
+            html += `<td style="padding: 8px;">${emoji}</td>`;
+            html += `<td style="padding: 8px;">${e.nombre}</td>`;
+            html += `<td style="padding: 8px; text-align: right;">${arg.total_votos} votos</td>`;
+            html += '</tr>';
+        });
+        
+        html += '</table>';
+        html += '</div>';
+        
+        html += '</div>';
+        
+        container.innerHTML = html;
+    }
+
+    crearPanelDebate() {
+        const container = document.createElement('div');
+        container.id = 'debateResults';
+        container.className = 'panel full-width';
+        
+        // Insertar después del panel de estados Quantum32
+        const quantum32Panel = document.getElementById('quantum32States').parentElement;
+        quantum32Panel.parentElement.insertBefore(container, quantum32Panel.nextSibling);
+        
+        return container;
+    }
+
+    getBarra(valor, max = 255) {
+        const porcentaje = (valor / max) * 10;
+        const llenos = Math.round(porcentaje);
+        return '█'.repeat(llenos) + '░'.repeat(10 - llenos);
+    }
+
+    getBarraVotos(votos, max) {
+        const porcentaje = (votos / max) * 20;
+        const llenos = Math.round(porcentaje);
+        return '█'.repeat(llenos) + '░'.repeat(20 - llenos);
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+}
+
+// Crear instancia global del sistema de debate
+const sistemaDebate = new SistemaDebate();
+
+// ===============================================
+// FIN SISTEMA DE DEBATE
 // ===============================================
 
 document.addEventListener('DOMContentLoaded', () => {
