@@ -522,6 +522,129 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- HELP SECTION -->
+                <div class="panel" id="help">
+                    <div class="panel-header">
+                        ❓ Guía Completa
+                    </div>
+                    <div class="panel-body">
+                        <h3 style="margin-bottom: 10px; font-size: 16px;">📊 Categorías Semánticas</h3>
+                        <p style="font-size: 13px; color: #54595d; margin-bottom: 15px;">
+                            El sistema Quantum32 clasifica el texto en 6 categorías. Los 4 esclavos I2C representan las principales:
+                        </p>
+                        
+                        <div style="background: #f8f9fa; border: 1px solid #a2a9b1; padding: 12px; border-radius: 2px; margin-bottom: 12px;">
+                            <h4 style="margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 18px;">👥</span>
+                                <span>Entidades (Esclavo 0 @ 0x10)</span>
+                            </h4>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Definición:</strong> Nombres propios de personas, lugares, organizaciones, eventos e instituciones específicas.
+                            </p>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Ejemplos:</strong> Albert Einstein, París, NASA, Google, Segunda Guerra Mundial, Universidad de Oxford
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #54595d;">
+                                <strong>Documento típico:</strong> Biografías, artículos históricos, perfiles corporativos
+                            </p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; border: 1px solid #a2a9b1; padding: 12px; border-radius: 2px; margin-bottom: 12px;">
+                            <h4 style="margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 18px;">⚡</span>
+                                <span>Acciones (Esclavo 1 @ 0x11)</span>
+                            </h4>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Definición:</strong> Verbos, procesos, procedimientos, instrucciones y métodos que describen "cómo hacer" algo.
+                            </p>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Ejemplos:</strong> programar, instalar, cocinar, calcular, construir, ejecutar, analizar, desarrollar
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #54595d;">
+                                <strong>Documento típico:</strong> Tutoriales, guías paso a paso, manuales, recetas, instrucciones
+                            </p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; border: 1px solid #a2a9b1; padding: 12px; border-radius: 2px; margin-bottom: 12px;">
+                            <h4 style="margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 18px;">💡</span>
+                                <span>Conceptos (Esclavo 2 @ 0x12)</span>
+                            </h4>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Definición:</strong> Ideas abstractas, teorías, principios, definiciones y conceptos técnicos o filosóficos.
+                            </p>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Ejemplos:</strong> inteligencia, relatividad, democracia, algoritmo, entropía, justicia, evolución
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #54595d;">
+                                <strong>Documento típico:</strong> Artículos científicos, ensayos filosóficos, papers académicos
+                            </p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; border: 1px solid #a2a9b1; padding: 12px; border-radius: 2px; margin-bottom: 12px;">
+                            <h4 style="margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 18px;">🔧</span>
+                                <span>Propiedades (Esclavo 3 @ 0x13)</span>
+                            </h4>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Definición:</strong> Características, atributos, cualidades, tipos, clasificaciones y descripciones físicas.
+                            </p>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Ejemplos:</strong> rojo, grande, metálico, rápido, rectangular, líquido, frío, pesado, duro
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #54595d;">
+                                <strong>Documento típico:</strong> Catálogos, enciclopedias, fichas técnicas, taxonomías
+                            </p>
+                        </div>
+                        
+                        <div style="background: #fef6e7; border: 1px solid #fc3; padding: 12px; border-radius: 2px; margin-bottom: 12px;">
+                            <h4 style="margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 18px;">🔗</span>
+                                <span>Relaciones (No asignadas a esclavo)</span>
+                            </h4>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Definición:</strong> Palabras que conectan entidades, como preposiciones, conjunciones y conectores lógicos.
+                            </p>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Ejemplos:</strong> entre, mediante, causa, efecto, relacionado con, debido a, depende de, implica
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #54595d;">
+                                <strong>Nota:</strong> Detectadas en análisis pero distribuidas entre los 4 esclavos existentes
+                            </p>
+                        </div>
+                        
+                        <div style="background: #fef6e7; border: 1px solid #fc3; padding: 12px; border-radius: 2px; margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 18px;">⏰</span>
+                                <span>Temporales (No asignadas a esclavo)</span>
+                            </h4>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Definición:</strong> Referencias temporales, fechas, períodos, duraciones y expresiones de tiempo.
+                            </p>
+                            <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5;">
+                                <strong>Ejemplos:</strong> 1945, ayer, durante, antes, siglo XX, temporalmente, hasta, mientras, siempre
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #54595d;">
+                                <strong>Nota:</strong> Detectadas en análisis pero distribuidas entre los 4 esclavos existentes
+                            </p>
+                        </div>
+                        
+                        <h3 style="margin: 20px 0 10px; font-size: 16px;">⚛️ Sistema Cuántico</h3>
+                        <div style="background: #e6f3ff; border: 1px solid #36c; padding: 12px; border-radius: 2px; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">
+                            Los <strong>bits inestables</strong> (amarillos/naranjas que parpadean) representan dimensiones del vector muy cercanas al threshold adaptativo. Estos bits tienen <strong>superposición cuántica (|0⟩ + |1⟩)</strong> porque existe incertidumbre semántica. Cada bit tiene una probabilidad de colapsar a 0 o 1. Más bits inestables = documento más ambiguo.
+                        </div>
+                        
+                        <h3 style="margin: 20px 0 10px; font-size: 16px;">💡 Métricas</h3>
+                        <ul style="margin-left: 20px; line-height: 1.8; font-size: 13px;">
+                            <li><strong>Peso Semántico (0-1):</strong> Riqueza y distribución del vocabulario</li>
+                            <li><strong>Coherencia Holográfica (0-1):</strong> Fidelidad Bulk-Boundary (AdS/CFT)</li>
+                            <li><strong>Boundary States (0-255):</strong> 4 estados distribuidos en esclavos I2C</li>
+                            <li><strong>Bulk Mask (32 bits):</strong> Máscara con threshold adaptativo (μ + σ/2)</li>
+                            <li><strong>Bits Inestables:</strong> Bits en superposición cuántica (±15% threshold)</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
